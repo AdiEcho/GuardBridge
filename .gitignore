@@ -27,6 +27,12 @@ go.work.sum
 # env file
 .env
 
+# Runtime config (contains API keys) and built binary
+config.yaml
+/guardbridge
+
 # Editor/IDE
-# .idea/
+.idea/
 # .vscode/
+.omc/
+research/

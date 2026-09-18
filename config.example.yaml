@@ -1,0 +1,42 @@
+# GuardBridge configuration.
+# Apply changes by restarting the service (no hot reload in v1).
+
+# Address GuardBridge listens on. Keep loopback unless inbound_token is set.
+listen: "127.0.0.1:8080"
+
+# Optional bearer token for inbound requests (sub2api Guard node token).
+# Empty = no inbound authentication (fine on loopback).
+# If you bind to a non-loopback address, set this.
+inbound_token: ""
+
+upstream:
+  # The OpenAI-compatible chat LLM GuardBridge calls for verdicts.
+  # Trailing "/v1" is optional; GuardBridge appends /v1/chat/completions.
+  base_url: "https://api.openai.com/v1"
+  api_key: ""
+  model: "gpt-4.1"
+
+  # Timeout for the upstream call in milliseconds.
+  # NOTE (timeout chain): sub2api's Guard node has its own TimeoutMS
+  # (default 3000, max 30000). Set the sub2api endpoint timeout ABOVE this
+  # value (and under its 30000 cap), or lower this one — otherwise sub2api
+  # gives up before GuardBridge's upstream does and every slow audit
+  # becomes a 503 on the caller side.
+  timeout_ms: 15000
+
+  # Generation budget for the upstream verdict request. This is
+  # GuardBridge's own budget — the inbound max_tokens=64 that sub2api
+  # sends is for the short two-line reply and is never forwarded.
+  # 256 covers the JSON verdict; raise it for reasoning-style models
+  # whose visible completion shares the token budget.
+  max_tokens: 256
+
+  # Optional sampling seed. Omit by setting to null.
+  seed: 42
+
+# Optional replacement system prompt. Empty = built-in bilingual default.
+# The JSON schema {"safety", "categories"} is fixed in code, not here.
+system_prompt: ""
+
+# Log level: debug | info | warn | error
+log_level: "info"
